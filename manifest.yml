@@ -1,0 +1,44 @@
+name: OrangeTV
+package: lazycat.coummunity.app.orangetv
+version: 8.8.8
+min_os_version: 1.3.8
+description: 🎬 OrangeTV 是一个开箱即用的、跨平台的影视聚合播放器
+homepage: https://github.com/djteang/OrangeTV
+author: djteang
+application:
+    subdomain: orangetv
+
+    public_path:
+        - /
+    upstreams:
+        - location: /
+          backend: http://orangetv:3000
+
+services:
+    orangetv:
+        # ghcr.io/djteang/orangetv:2.0
+        image: registry.lazycat.cloud/czyt/djteang/orangetv:21a3f716a7398492
+        environment:
+            - USERNAME={{ .U.admin_username }}
+            - PASSWORD={{.U.admin_password}}
+            - NEXT_PUBLIC_ENABLE_REGISTER={{.U.enable_register}}
+            - NEXT_PUBLIC_STORAGE_TYPE=redis
+            - REDIS_URL=redis://orangetv-redis:6379
+        depends_on:
+            - orangetv-redis
+
+    orangetv-redis:
+        image: registry.lazycat.cloud/edward/library/redis:4c6b9d7b7a334a2e
+        binds:
+            - /lzcapp/var/redis:/data
+
+locales:
+    zh:
+        name: "OrangeTV"
+        description: "OrangeTV 是一个开箱即用的、跨平台的影视聚合播放器"
+    zh_CN:
+        name: "OrangeTV"
+        description: "OrangeTV 是一个开箱即用的、跨平台的影视聚合播放器"
+    en:
+        name: "OrangeTV"
+        description: "OrangeTV is a ready-to-use, cross-platform video aggregation player"
