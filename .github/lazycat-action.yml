@@ -1,0 +1,55 @@
+version: 1
+
+project:
+  root: .
+  build_config: lzc-build.yml
+  package_file: package.yml
+  output: .lazycat-build/orangetv.lpk
+  target_arch: amd64
+
+update:
+  strategy: publish
+  allow_downgrade: false
+  version_source:
+    type: image
+    image: orangetv
+    bump: patch
+
+build:
+  run_buildscript: false
+
+images:
+  # 主应用：GHCR 上游仅 latest + 两段式(1.0/2.0/3.0)，与包版本 8.8.9 无对应关系
+  # → 跟踪 mutable latest，digest-pin amd64 平台 digest，patch 自增
+  - id: orangetv
+    target: service
+    service: orangetv
+    source: ghcr.io/djteang/orangetv
+    channel: custom
+    sort: created
+    tag_regex: '^latest$'
+    delivery:
+      mode: mirror
+      require_digest_match: true
+  # 辅助 redis：7.x-alpine 家族，tag 带后缀 → custom + 版本映射 7.4-alpine → 7.4.0
+  - id: orangetv-redis
+    target: service
+    service: orangetv-redis
+    source: library/redis
+    channel: custom
+    sort: semver
+    tag_regex: '^7\.\d+-alpine$'
+    version_regex: '^(?P<version>7\.\d+)-alpine$'
+    version_template: '{version}.0'
+    delivery:
+      mode: mirror
+
+stores:
+  official:
+    # Official store publication is intentionally disabled; publish only to Miaomiao Store.
+    enabled: false
+  private:
+    enabled: true
+    skip_if_version_exists: true
+    name: OrangeTV
+    summary: "OrangeTV 是一个开箱即用的、跨平台的影视聚合播放器"

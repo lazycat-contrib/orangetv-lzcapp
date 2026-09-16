@@ -1,0 +1,24 @@
+application:
+  subdomain: orangetv
+  public_path:
+    - /
+  upstreams:
+    - location: /
+      backend: http://orangetv:3000
+services:
+  orangetv:
+    # upstream: ghcr.io/djteang/orangetv:latest
+    image: ghcr.1ms.run/djteang/orangetv:latest@sha256:1d49d147744db2eee7d19cb9781aae5d70aec2983339638d4a513323ae8849be
+    environment:
+      - USERNAME={{ .U.admin_username }}
+      - PASSWORD={{.U.admin_password}}
+      - NEXT_PUBLIC_ENABLE_REGISTER={{.U.enable_register}}
+      - NEXT_PUBLIC_STORAGE_TYPE=redis
+      - REDIS_URL=redis://orangetv-redis:6379
+    depends_on:
+      - orangetv-redis
+  orangetv-redis:
+    # upstream: library/redis:7.4-alpine
+    image: docker.1ms.run/library/redis:7.4-alpine
+    binds:
+      - /lzcapp/var/redis:/data
